@@ -1,34 +1,29 @@
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form
 from fastapi.responses import HTMLResponse
-import yfinance as yf
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
+from starlette.requests import Request
+import yfinance as yf
 
 app = FastAPI()
 
+# テンプレート設定
 templates = Jinja2Templates(directory="templates")
 
-# スタティックファイル（CSSとか）を使いたいときのために
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
+# ホームページ表示
 @app.get("/", response_class=HTMLResponse)
-def read_form(request: Request):
-    return templates.TemplateResponse("form.html", {"request": request})
+async def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
+# 株価取得処理
 @app.post("/get_price", response_class=HTMLResponse)
-def get_price(request: Request, code: str = Form(...)):
-    # コードを判定して日本株 or 米国株対応
-    if code.isdigit():
-        ticker_symbol = f"{code}.T"
-    else:
-        ticker_symbol = code
-
-    stock = yf.Ticker(ticker_symbol)
-    todays_data = stock.history(period='1d')
+async def get_price(request: Request, code: str = Form(...)):
+    print(f"銘柄コード: {code}")  # 送信されたコードをコンソールに出力
+    stock = yf.Ticker(code)
+    stock_info = stock.history(period="1d")
+    price = stock_info['Close'].iloc[0]
     
-    if todays_data.empty:
-        price = "株価データが取得できませんでした。"
-    else:
-        price = todays_data['Close'][0]
-
-    return templates.TemplateResponse("result.html", {"request": request, "code": code, "price": price})
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "code": code,
+        "price": price
+    })
