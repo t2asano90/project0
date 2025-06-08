@@ -1,29 +1,50 @@
 from fastapi import FastAPI, Form
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from starlette.requests import Request
 import yfinance as yf
 
 app = FastAPI()
 
-# テンプレート設定
-templates = Jinja2Templates(directory="templates")
-
-# ホームページ表示
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+async def read_form():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>株価検索フォーム</title>
+    </head>
+    <body>
+        <h1>銘柄コードを入力してください</h1>
+        <form action="/get_price" method="post">
+            <input type="text" name="code" placeholder="例: 7203 または AAPL" required>
+            <button type="submit">検索</button>
+        </form>
+    </body>
+    </html>
+    """
 
-# 株価取得処理
 @app.post("/get_price", response_class=HTMLResponse)
-async def get_price(request: Request, code: str = Form(...)):
-    print(f"銘柄コード: {code}")  # 送信されたコードをコンソールに出力
-    stock = yf.Ticker(code)
-    stock_info = stock.history(period="1d")
-    price = stock_info['Close'].iloc[0]
-    
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "code": code,
-        "price": price
-    })
+async def get_price(code: str = Form(...)):
+    try:
+        stock = yf.Ticker(code)
+        price = stock.history(period="1d")["Close"][0]
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>株価表示</title>
+        </head>
+        <body>
+            <h1>{code} の株価: {price:.2f} 円</h1>
+            <a href="/">戻る</a>
+        </body>
+        </html>
+        """
+    except Exception as e:
+        return f"""
+        <html>
+        <body>
+            <h1>エラー: {str(e)}</h1>
+            <a href="/">戻る</a>
+        </body>
+        </html>
+        """
