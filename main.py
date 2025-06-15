@@ -4,7 +4,6 @@ from fastapi.staticfiles import StaticFiles
 import yfinance as yf
 
 app = FastAPI()
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/", response_class=HTMLResponse)
@@ -23,6 +22,29 @@ async def read_form():
             <br>
             <button type="submit">検索</button>
         </form>
+    </body>
+    </html>
+    """
+
+@app.post("/get_price", response_class=HTMLResponse)
+async def get_price(code: str = Form(...)):
+    try:
+        ticker = yf.Ticker(code)
+        price = ticker.info.get("regularMarketPrice", "価格情報が見つかりません")
+    except Exception as e:
+        price = f"エラーが発生しました: {e}"
+    
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>株価結果</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <h1>{code} の株価</h1>
+        <p>現在の価格: {price}</p>
+        <a href="/">戻る</a>
     </body>
     </html>
     """
