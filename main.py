@@ -1,59 +1,34 @@
-# main.py
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import yfinance as yf
 import matplotlib.pyplot as plt
-import io
-import base64
+import os
 
 app = FastAPI()
 
+# テンプレートと静的ファイルの設定
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.get("/", response_class=HTMLResponse)
-async def form():
-    return """
-    <html>
-        <head><title>株価検索フォーム</title></head>
-        <body>
-            <h1>銘柄コードを入力してください</h1>
-            <form action="/get_price" method="post">
-                <input type="text" name="code" placeholder="例: AAPL" required>
-                <button type="submit">検索</button>
-            </form>
-        </body>
-    </html>
-    """
+async def form_get(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/get_price", response_class=HTMLResponse)
-async def get_price(code: str = Form(...)):
-    ticker = yf.Ticker(code)
-    hist = ticker.history(period="1mo")
+async def get_price(request: Request, code: str = Form(...)):
+    stock = yf.Ticker(code)
+    hist = stock.history(period="1mo")
 
-    if hist.empty:
-        return f"<h2>{code} のデータが見つかりませんでした。</h2>"
-
-    # グラフ作成
-    plt.figure(figsize=(10, 4))
-    plt.plot(hist.index, hist["Close"], label="Close")
-    plt.title(f"{code} の過去1ヶ月の終値")
-    plt.xlabel("日付")
-    plt.ylabel("株価")
-    plt.grid(True)
-    plt.legend()
-
-    # 画像をbase64にエンコード
-    buf = io.BytesIO()
-    plt.savefig(buf, format="png")
-    buf.seek(0)
-    image_base64 = base64.b64encode(buf.read()).decode("utf-8")
+    # グラフ生成
+    plt.figure(figsize=(10, 5))
+    hist["Close"].plot(title=f"{code} 株価")
+    image_path = f"static/{code}.png"
+    plt.savefig(image_path)
     plt.close()
 
-    return f"""
-    <html>
-        <head><title>結果</title></head>
-        <body>
-            <h2>{code} の株価チャート</h2>
-            <img src="data:image/png;base64,{image_base64}" />
-            <br><a href="/">戻る</a>
-        </body>
-    </html>
-    """
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "image_url": f"/static/{code}.png"
+    })
