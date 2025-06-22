@@ -17,3 +17,14 @@ def save_search_history(code: str):
     db.add(record)
     db.commit()
     db.close()
+
+    # services/stock_service.py
+from models.database import SessionLocal, SearchHistory
+
+# 既存関数：save_search_history(code)
+
+def get_search_history():
+    db = SessionLocal()
+    records = db.query(SearchHistory).order_by(SearchHistory.timestamp.desc()).all()
+    db.close()
+    return records

@@ -1,0 +1,27 @@
+<!-- templates/history.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>検索履歴</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>検索履歴一覧</h1>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>銘柄コード</th>
+            <th>検索日時</th>
+        </tr>
+        {% for item in history %}
+        <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.code }}</td>
+            <td>{{ item.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="/">← トップに戻る</a>
+</body>
+</html>

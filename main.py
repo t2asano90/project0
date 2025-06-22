@@ -15,3 +15,8 @@ templates = Jinja2Templates(directory="templates")
 from models.database import init_db
 
 init_db()
+
+from routers import stock, history
+
+app.include_router(stock.router)
+app.include_router(history.router)
