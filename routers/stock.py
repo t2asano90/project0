@@ -2,6 +2,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from services.stock_service import get_latest_history
+from utils.stock_data import get_stock_history
 import matplotlib.pyplot as plt
 
 router = APIRouter()
