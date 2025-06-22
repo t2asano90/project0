@@ -28,3 +28,9 @@ def get_search_history():
     records = db.query(SearchHistory).order_by(SearchHistory.timestamp.desc()).all()
     db.close()
     return records
+
+def get_latest_history(limit: int = 10):
+    db = SessionLocal()
+    records = db.query(SearchHistory).order_by(SearchHistory.timestamp.desc()).limit(limit).all()
+    db.close()
+    return records

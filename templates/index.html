@@ -63,14 +63,19 @@
         <input type="text" name="code" placeholder="例: 7203 または AAPL" required>
         <button type="submit">検索</button>
     </form>
-    {% if error %}
-         <p style="color: red;">{{ error }}</p>
-    {% endif %}
-    {% if image_url %}
-        <div class="graph-container">
-            <h2>過去の株価チャート</h2>
-            <img src="{{ image_url }}" alt="株価チャート">
-        </div>
-    {% endif %}
+
+    <h2>直近の検索履歴（最新10件）</h2>
+    <table border="1">
+        <tr>
+            <th>銘柄コード</th>
+            <th>検索日時</th>
+        </tr>
+        {% for item in history %}
+        <tr>
+            <td>{{ item.code }}</td>
+            <td>{{ item.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>

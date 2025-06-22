@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from services.stock_service import get_stock_history
+from services.stock_service import get_latest_history
 import matplotlib.pyplot as plt
 
 router = APIRouter()
@@ -9,7 +9,11 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    history = get_latest_history()
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "history": history
+    })
 
 @router.post("/get_price", response_class=HTMLResponse)
 async def get_price(request: Request, code: str = Form(...)):
