@@ -24,5 +24,5 @@ app.include_router(history.router)
 
 # アプリ起動時にDB初期化（これを追加）
 @app.on_event("startup")
-async def startup_event():
-    await init_db()
+def startup_event():
+    init_db()  
