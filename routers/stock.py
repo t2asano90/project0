@@ -12,22 +12,20 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.post("/get_price", response_class=HTMLResponse)
-async def get_price(request: Request, code: str = Form(...)):
-    code, hist = get_stock_history(code)
+async def get_price(request: Request, code: str = Form(...), period: str = Form("1mo")):
+    code, hist = get_stock_history(code, period=period)
 
     img_data = None
-    if not hist.empty:
-        # グラフ作成
+    if hist is not None and not hist.empty:
         plt.figure(figsize=(10, 5))
         plt.plot(hist.index, hist['Close'], label="終値", color='blue')
-        plt.title(f"{code} の過去1ヶ月の株価推移")
+        plt.title(f"{code} の過去の株価推移 ({period})")
         plt.xlabel("日付")
         plt.ylabel("株価")
         plt.xticks(rotation=45)
         plt.tight_layout()
         plt.legend()
 
-        # バイナリ画像へ変換
         buf = io.BytesIO()
         plt.savefig(buf, format="png")
         buf.seek(0)
@@ -35,13 +33,11 @@ async def get_price(request: Request, code: str = Form(...)):
         buf.close()
         plt.close()
 
-        # 最新価格を取得して保存
         latest_price = hist["Close"].iloc[-1]
-        await save_search(code, latest_price)
+        save_search(code, latest_price)
     else:
         latest_price = "データなし"
 
-    # 履歴取得
     latest_searches = await get_latest_searches()
 
     return templates.TemplateResponse("result.html", {

@@ -23,11 +23,12 @@
             display: inline-block;
         }
 
-        input[type="text"] {
+        input[type="text"], select {
             padding: 10px;
             width: 250px;
             border-radius: 5px;
             border: 1px solid #ccc;
+            margin-bottom: 10px;
         }
 
         button {
@@ -61,6 +62,12 @@
     <h1>銘柄コードを入力してください</h1>
     <form action="/get_price" method="post">
         <input type="text" name="code" placeholder="例: 7203 または AAPL" required>
+        <br>
+        <select name="period">
+            <option value="1mo">1ヶ月</option>
+            <option value="3mo">3ヶ月</option>
+            <option value="1y">1年</option>
+        </select>
         <button type="submit">検索</button>
     </form>
 
