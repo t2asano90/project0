@@ -1,40 +1,49 @@
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from services.stock_service import get_latest_history
-from utils.stock_data import get_stock_history
-from utils.stock_data import get_stock_history
 import matplotlib.pyplot as plt
+import io
+import base64
+
+from utils.stock_data import get_stock_history
+from db.database import save_search, get_latest_searches
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-
-@router.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    history = get_latest_history()
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "history": history
-    })
 
 @router.post("/get_price", response_class=HTMLResponse)
 async def get_price(request: Request, code: str = Form(...)):
     code, hist = get_stock_history(code)
 
-    if hist is None or hist.empty:
-        return templates.TemplateResponse("index.html", {
-            "request": request,
-            "error": f"「{code}」の株価データが見つかりませんでした。"
-        })
+    img_data = None
+    if not hist.empty:
+        plt.figure(figsize=(10, 5))
+        plt.plot(hist.index, hist['Close'], label="終値", color='blue')
+        plt.title(f"{code} の過去1ヶ月の株価推移")
+        plt.xlabel("日付")
+        plt.ylabel("株価")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.legend()
 
-    # グラフ描画
-    image_path = f"static/{code}.png"
-    plt.figure(figsize=(10, 5))
-    hist["Close"].plot(title=f"{code} 株価")
-    plt.savefig(image_path)
-    plt.close()
+        buf = io.BytesIO()
+        plt.savefig(buf, format="png")
+        buf.seek(0)
+        img_data = base64.b64encode(buf.read()).decode("utf-8")
+        buf.close()
+        plt.close()
 
-    return templates.TemplateResponse("index.html", {
+        latest_price = hist["Close"].iloc[-1]
+        save_search(code, latest_price)
+    else:
+        latest_price = "データなし"
+
+    latest_searches = get_latest_searches()
+
+    return templates.TemplateResponse("result.html", {
         "request": request,
-        "image_url": f"/static/{code}.png"
+        "code": code,
+        "price": latest_price,
+        "graph": img_data,
+        "searches": latest_searches
     })

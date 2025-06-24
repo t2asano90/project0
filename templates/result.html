@@ -1,32 +1,56 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.5">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+    <meta charset="UTF-8">
+    <title>{{ code }} の株価</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 2em;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .graph {
+            margin-top: 30px;
+        }
+        .search-history {
+            margin-top: 40px;
+            text-align: left;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
+    </style>
 </head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;株価結果&lt;/title&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;h1&gt;検索結果&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;p&gt;銘柄コード: {{ code }}&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;p&gt;現在の株価: {{ price }}&lt;/p&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;a href="/"&gt;もう一度検索する&lt;/a&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+<div class="container">
+    <h1>{{ code }} の株価</h1>
+
+    {% if price != "データなし" %}
+        <p>現在の株価: {{ price }}</p>
+        <div class="graph">
+            <img src="data:image/png;base64,{{ graph }}" alt="株価グラフ">
+        </div>
+    {% else %}
+        <p>株価データが取得できませんでした。</p>
+    {% endif %}
+
+    <a href="/">トップページに戻る</a>
+
+    <div class="search-history">
+        <h2>直近の検索履歴</h2>
+        <ul>
+            {% for s in searches %}
+                <li>{{ s.code }}: {{ s.price }}（{{ s.timestamp }}）</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 </body>
-<!-- 検索結果ページ下部に追加 -->
-<br><br>
-<a href="/">← トップページに戻る</a>
 </html>
