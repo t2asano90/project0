@@ -3,6 +3,7 @@ from datetime import datetime
 
 DB_PATH = "search_history.db"
 
+# DB初期化
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
@@ -15,11 +16,8 @@ async def init_db():
         """)
         await db.commit()
 
-def save_search(code: str, price: float):
-    import asyncio
-    asyncio.create_task(_save_search(code, price))
-
-async def _save_search(code: str, price: float):
+# 非同期で保存
+async def save_search(code: str, price: float):
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
             "INSERT INTO search_history (code, price, timestamp) VALUES (?, ?, ?)",
@@ -27,11 +25,8 @@ async def _save_search(code: str, price: float):
         )
         await db.commit()
 
-def get_latest_searches(limit: int = 10):
-    import asyncio
-    return asyncio.run(_get_latest_searches(limit))
-
-async def _get_latest_searches(limit: int = 10):
+# 最新の履歴を取得
+async def get_latest_searches(limit: int = 10):
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
             "SELECT code, price, timestamp FROM search_history ORDER BY id DESC LIMIT ?",

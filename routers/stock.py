@@ -17,6 +17,7 @@ async def get_price(request: Request, code: str = Form(...)):
 
     img_data = None
     if not hist.empty:
+        # グラフ作成
         plt.figure(figsize=(10, 5))
         plt.plot(hist.index, hist['Close'], label="終値", color='blue')
         plt.title(f"{code} の過去1ヶ月の株価推移")
@@ -26,6 +27,7 @@ async def get_price(request: Request, code: str = Form(...)):
         plt.tight_layout()
         plt.legend()
 
+        # バイナリ画像へ変換
         buf = io.BytesIO()
         plt.savefig(buf, format="png")
         buf.seek(0)
@@ -33,12 +35,14 @@ async def get_price(request: Request, code: str = Form(...)):
         buf.close()
         plt.close()
 
+        # 最新価格を取得して保存
         latest_price = hist["Close"].iloc[-1]
-        save_search(code, latest_price)
+        await save_search(code, latest_price)
     else:
         latest_price = "データなし"
 
-    latest_searches = get_latest_searches()
+    # 履歴取得
+    latest_searches = await get_latest_searches()
 
     return templates.TemplateResponse("result.html", {
         "request": request,
