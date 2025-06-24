@@ -31,13 +31,19 @@
             margin-bottom: 10px;
         }
 
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
         button {
             padding: 10px 20px;
             border: none;
             background-color: #4CAF50;
             color: white;
             border-radius: 5px;
-            margin-left: 10px;
+            margin-top: 10px;
             cursor: pointer;
         }
 
@@ -63,16 +69,18 @@
     <form action="/get_price" method="post">
         <input type="text" name="code" placeholder="例: 7203 または AAPL" required>
         <br>
-        <select name="period">
+        <label for="period">期間を選択:</label>
+        <select name="period" id="period">
             <option value="1mo">1ヶ月</option>
             <option value="3mo">3ヶ月</option>
             <option value="1y">1年</option>
         </select>
+        <br>
         <button type="submit">検索</button>
     </form>
 
     <h2>直近の検索履歴（最新10件）</h2>
-    <table border="1">
+    <table border="1" style="margin: 0 auto; background-color: white;">
         <tr>
             <th>銘柄コード</th>
             <th>検索日時</th>

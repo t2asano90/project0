@@ -16,5 +16,4 @@ def get_stock_history(code: str, period: str = "1mo"):
         hist = ticker.history(period=period)
         return original_code, hist
     except Exception as e:
-        print(f"Error fetching data for {code}: {e}")
-        return original_code, pd.DataFrame()
+        raise RuntimeError(f"Failed to fetch data for {original_code} ({code}): {e}")
